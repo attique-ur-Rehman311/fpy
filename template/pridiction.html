@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>BMW Car Price Prediction</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:Segoe UI;
+    background:#f4f6f9;
+}
+
+/* NAV */
+nav{
+    background:#0616a1;
+    padding:14px;
+    text-align:right;
+}
+nav a{
+    color:white;
+    margin-left:20px;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+/* MAIN BOX */
+.container{
+    max-width:700px;
+    margin:50px auto;
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* TITLE */
+h2{
+    text-align:center;
+    color:#0616a1;
+}
+
+/* INPUT */
+input,select{
+    width:100%;
+    padding:12px;
+    margin-bottom:12px;
+    border:1px solid #ddd;
+    border-radius:8px;
+}
+
+/* BUTTON */
+button{
+    width:100%;
+    padding:14px;
+    background:#0616a1;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+}
+
+/* RESULT */
+.result-section{
+    margin-top:20px;
+    padding:15px;
+    background:#eef2ff;
+    border-radius:10px;
+    display:none;
+}
+
+.result-value{
+    font-size:28px;
+    text-align:center;
+    color:#0616a1;
+    font-weight:bold;
+}
+
+/* GRAPH */
+canvas{
+    margin-top:15px;
+}
+
+/* NEW: TWO CHARTS ROW */
+.charts-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-top:20px;
+}
+.chart-card{
+    background:white;
+    border:1px solid #dde3f5;
+    border-radius:10px;
+    padding:16px;
+}
+.chart-card h4{
+    margin:0 0 4px 0;
+    font-size:14px;
+    color:#0616a1;
+}
+.chart-card p{
+    margin:0 0 10px 0;
+    font-size:12px;
+    color:#888;
+}
+.chart-card canvas{
+    height:200px !important;
+    margin-top:0;
+}
+
+/* NEW: ACCURACY METRICS */
+.metrics-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin-top:20px;
+}
+.metric-box{
+    border-radius:10px;
+    padding:14px 10px;
+    text-align:center;
+    border:1px solid #ddd;
+}
+.metric-box .m-val{
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:4px;
+}
+.metric-box .m-lbl{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:#666;
+    font-weight:600;
+}
+.metric-box .m-desc{
+    font-size:11px;
+    color:#999;
+    margin-top:3px;
+}
+.metric-box.green{ background:rgba(40,167,69,0.07); border-color:rgba(40,167,69,0.3); }
+.metric-box.green .m-val{ color:#1e7e34; }
+.metric-box.blue{ background:rgba(6,22,161,0.06); border-color:rgba(6,22,161,0.2); }
+.metric-box.blue .m-val{ color:#0616a1; }
+.metric-box.orange{ background:rgba(255,140,0,0.07); border-color:rgba(255,140,0,0.3); }
+.metric-box.orange .m-val{ color:#b36a00; }
+.metric-box.teal{ background:rgba(0,180,180,0.07); border-color:rgba(0,180,180,0.3); }
+.metric-box.teal .m-val{ color:#007a7a; }
+
+/* NEW: INSIGHT BOX */
+.pred-insight{
+    margin-top:16px;
+    padding:12px 16px;
+    background:rgba(6,22,161,0.05);
+    border-left:4px solid #0616a1;
+    border-radius:8px;
+    font-size:13px;
+    line-height:1.65;
+    color:#1a2a8a;
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+}
+.pred-insight .pi-icon{ font-size:16px; flex-shrink:0; margin-top:1px; }
+.pred-insight strong{ display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px; }
+
+/* FOOTER */
+footer{
+    margin-top:30px;
+    background:#0616a1;
+    color:white;
+    text-align:center;
+    padding:10px;
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+    <a href="/dashboard/">Dashboard</a>
+    <a href="/pridiction/">Prediction</a>
+    <a href="/report/">Report</a>
+    <a href="/">Logout</a>
+</nav>
+
+<div class="container">
+
+<h2>🚗 Car Price Prediction</h2>
+
+<form id="form" onsubmit="predict(event)">
+
+<input type="number" id="year" placeholder="Year" required>
+<input type="number" id="mileage" placeholder="Mileage" min="0" step="1" required>
+<input type="number" id="engine" placeholder="Engine Size (any value)" step="any" required>
+
+<select id="fuel">
+<option value="" disabled selected>Select Fuel</option>
+<option>Petrol</option>
+<option>Diesel</option>
+<option>Electric</option>
+</select>
+
+<select id="transmission">
+<option value="" disabled selected>Select Transmission</option>
+<option>Automatic</option>
+<option>Manual</option>
+</select>
+
+<input type="text" id="color" placeholder="Color">
+
+<select id="model">
+<option value="" disabled selected>Select Model</option>
+<option>5 Series</option>
+<option>X3</option>
+<option>i8</option>
+<option>X5</option>
+</select>
+
+<button type="submit">Predict Price</button>
+
+</form>
+
+<!-- RESULT -->
+<div class="result-section" id="resultBox">
+
+    <!-- ORIGINAL PRICE DISPLAY -->
+    <div class="result-value" id="result">$0</div>
+
+    <!-- ORIGINAL SINGLE CHART -->
+    <canvas id="chart"></canvas>
+
+    <!-- NEW: TWO CHARTS SIDE BY SIDE -->
+    <div class="charts-row">
+        <div class="chart-card">
+            <h4>📊 Price Comparison</h4>
+            <p>Your car vs market segments</p>
+            <canvas id="priceChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h4>🎯 Model Accuracy</h4>
+            <p>Random Forest performance</p>
+            <canvas id="accuracyChart"></canvas>
+        </div>
+    </div>
+
+    <!-- NEW: ACCURACY METRICS -->
+    <div class="metrics-grid">
+        <div class="metric-box green">
+            <div class="m-val">~87%</div>
+            <div class="m-lbl">R² Score</div>
+            <div class="m-desc">Variance explained</div>
+        </div>
+        <div class="metric-box blue">
+            <div class="m-val">~$1,200</div>
+            <div class="m-lbl">MAE</div>
+            <div class="m-desc">Mean Absolute Error</div>
+        </div>
+        <div class="metric-box orange">
+            <div class="m-val">300+</div>
+            <div class="m-lbl">Trees</div>
+            <div class="m-desc">Decision trees used</div>
+        </div>
+        <div class="metric-box teal">
+            <div class="m-val">80/20</div>
+            <div class="m-lbl">Train/Test</div>
+            <div class="m-desc">Data split ratio</div>
+        </div>
+    </div>
+
+    <!-- NEW: SMART INSIGHT -->
+    <div class="pred-insight">
+        <span class="pi-icon">💡</span>
+        <div>
+            <strong>Prediction Insight</strong>
+            <span id="predInsight">Your result analysis will appear here.</span>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<footer>
+© 2026 Data Analyst System
+</footer>
+<script>
+let chart;
+let priceChart;
+let accuracyChart;
+
+function predict(e){
+e.preventDefault();
+
+const yearVal    = document.getElementById("year").value;
+const mileageVal = document.getElementById("mileage").value;
+const engineVal  = document.getElementById("engine").value;
+const fuelVal    = document.getElementById("fuel").value;
+const transVal   = document.getElementById("transmission").value;
+const colorVal   = document.getElementById("color").value;
+const modelVal   = document.getElementById("model").value;
+
+fetch("/predict-price/",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+        year: yearVal,
+        mileage_km: mileageVal,
+        engine_size: engineVal,
+        fuel_type: fuelVal,
+        transmission: transVal,
+        color: colorVal,
+        model: modelVal
+    })
+})
+.then(res=>res.json())
+.then(data=>{
+    if(data.error){
+        alert(data.error);
+    }else{
+
+        resultBox.style.display="block";
+        result.innerText="$ "+Math.round(data.predicted_price);
+
+        drawChart(data.predicted_price);
+        drawPriceChart(data.predicted_price);
+
+        // 🔥 dynamic
+        drawAccuracyChart(data.accuracy_data);
+        updateMetrics(data.r2, data.mae);
+
+        generateInsight(data.predicted_price, yearVal, mileageVal, modelVal);
+          // 🔥 FORM CLEAR YAHAN
+        document.getElementById("form").reset();
+    }
+});
+}
+
+/* PRICE BAR */
+function drawChart(price){
+    if(chart) chart.destroy();
+    chart = new Chart(document.getElementById("chart"),{
+        type:"bar",
+        data:{
+            labels:["Predicted Price"],
+            datasets:[{ data:[price] }]
+        }
+    });
+}
+
+/* PRICE COMPARISON */
+function drawPriceChart(price){
+    if(priceChart) priceChart.destroy();
+
+    const benchmarks = [15000, 30000, 55000, 90000];
+
+    priceChart = new Chart(document.getElementById("priceChart"),{
+        type:"bar",
+        data:{
+            labels:["Budget","Mid","Premium","Luxury","Your Car"],
+            datasets:[{
+                data:[...benchmarks, price]
+            }]
+        }
+    });
+}
+
+/* ACCURACY CHART */
+function drawAccuracyChart(accData){
+    if(accuracyChart) accuracyChart.destroy();
+
+    accuracyChart = new Chart(document.getElementById("accuracyChart"),{
+        type:"radar",
+        data:{
+            labels:["R²","Precision","Coverage","Features","Stability"],
+            datasets:[{
+                data: accData
+            }]
+        }
+    });
+}
+
+/* METRICS UPDATE */
+function updateMetrics(r2, mae){
+    document.querySelector(".green .m-val").innerText = Math.round(r2*100) + "%";
+    document.querySelector(".blue .m-val").innerText = "$" + mae;
+}
+
+/* INSIGHT */
+function generateInsight(price, year, mileage, carModel){
+    const age = new Date().getFullYear() - parseInt(year);
+    let text = '';
+
+    if(price > 60000)
+        text += `Premium value ($${Math.round(price)}). `;
+    else if(price > 30000)
+        text += `Mid-range value ($${Math.round(price)}). `;
+    else
+        text += `Budget value ($${Math.round(price)}). `;
+
+    if(age <= 3)
+        text += `New car. `;
+    else if(age <= 7)
+        text += `Moderate age. `;
+    else
+        text += `Old car. `;
+
+    if(mileage < 50000)
+        text += 'Low mileage.';
+    else if(mileage < 120000)
+        text += 'Average mileage.';
+    else
+        text += 'High mileage.';
+
+    document.getElementById('predInsight').textContent = text;
+}
+</script>
+</body>
+</html>

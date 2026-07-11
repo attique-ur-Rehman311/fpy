@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+    font-family:Arial;
+    margin:0;
+    background:#f4f6f9;
+}
+
+/* NAVBAR */
+nav{
+    background:#0616a1;
+    padding:14px;
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+}
+nav a{
+    color:white;
+    margin-left:20px;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+/* CONTENT */
+h2{text-align:center;}
+.content{padding:20px}
+
+/* FILTERS */
+.filters{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:20px;
+}
+select{padding:6px}
+
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:20px;
+}
+
+.chart-box{
+    background:white;
+    padding:10px;
+    border-radius:8px;
+}
+canvas{height:220px !important}
+
+/* INSIGHT BOX */
+.insight-box{
+    margin-top:10px;
+    padding:10px 14px;
+    border-radius:8px;
+    font-size:13px;
+    line-height:1.6;
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    border-left:4px solid;
+}
+.insight-box.blue{
+    background:rgba(6,22,161,0.06);
+    border-left-color:#0616a1;
+    color:#1a2a8a;
+}
+.insight-box.green{
+    background:rgba(40,167,69,0.07);
+    border-left-color:#28a745;
+    color:#1a5e2a;
+}
+.insight-box.orange{
+    background:rgba(255,140,0,0.08);
+    border-left-color:orange;
+    color:#7a4e00;
+}
+.insight-box.pink{
+    background:rgba(220,53,69,0.07);
+    border-left-color:#dc3545;
+    color:#7a1020;
+}
+.insight-icon{ font-size:15px; flex-shrink:0; margin-top:2px; }
+.insight-title{ font-weight:bold; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px; }
+
+/* FOOTER */
+footer{
+   background:#0616a1;
+    color:white;
+    text-align:center;
+    padding:10px;
+    margin-top:20px;
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav>
+    <a href="/dashboard/">Dashboard</a>
+    <a href="/pridiction/">Prediction</a>
+    <a href="/report/">Report</a>
+    <a href="/" onclick="logout()">Logout</a>
+</nav>
+
+<!-- CONTENT -->
+<div class="content">
+<h2>📊 Multi-Filter Dynamic Dashboard</h2>
+
+<!-- FILTERS -->
+<select id="year" onchange="applyFilter()"></select>
+<select id="region" onchange="applyFilter()"></select>
+<select id="model" onchange="applyFilter()"></select>
+
+<!-- CHART GRID -->
+<div class="grid">
+
+    <!-- CHART 1: SALES TREND -->
+    <div class="chart-box">
+        <canvas id="c1"></canvas>
+        <div class="insight-box blue">
+            <span class="insight-icon">💡</span>
+            <div>
+                <div class="insight-title">Sales Trend Insight</div>
+                <span id="insight1">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHART 2: AVG PRICE -->
+    <div class="chart-box">
+        <canvas id="c2"></canvas>
+        <div class="insight-box green">
+            <span class="insight-icon">💡</span>
+            <div>
+                <div class="insight-title">Price Insight</div>
+                <span id="insight2">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHART 3: SALES SHARE -->
+    <div class="chart-box">
+        <canvas id="c3"></canvas>
+        <div class="insight-box pink">
+            <span class="insight-icon">💡</span>
+            <div>
+                <div class="insight-title">Sales Share Insight</div>
+                <span id="insight3">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHART 4: MILEAGE TREND -->
+    <div class="chart-box">
+        <canvas id="c4"></canvas>
+        <div class="insight-box orange">
+            <span class="insight-icon">💡</span>
+            <div>
+                <div class="insight-title">Mileage Insight</div>
+                <span id="insight4">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+© 2026 Data Analyst System
+</footer>
+
+<script>
+let charts = [];
+
+async function loadFilters(){
+    const res = await fetch('/filter-options/');
+    const data = await res.json();
+    fillSelect('year', data.years);
+    fillSelect('region', data.regions);
+    fillSelect('model', data.models);
+    applyFilter();
+}
+
+function fillSelect(id, values){
+    const sel = document.getElementById(id);
+    sel.innerHTML = "";
+    const all = document.createElement("option");
+    all.value = "all";
+    all.textContent = "All";
+    sel.appendChild(all);
+    values.forEach(v=>{
+        const op = document.createElement("option");
+        op.value = v;
+        op.textContent = v;
+        sel.appendChild(op);
+    });
+}
+
+function drawCharts(labels, price, sales, mileage){
+    charts.forEach(c => c.destroy());
+    charts = [];
+
+    charts.push(new Chart(c1,{
+        type:'line',
+        data:{
+            labels,
+            datasets:[{
+                label:'Sales Trend',
+                data:sales,
+                borderColor:'#0616a1',
+                backgroundColor:'rgba(6,22,161,0.15)',
+                fill:true,
+                tension:0.4
+            }]
+        }
+    }));
+
+    charts.push(new Chart(c2,{
+        type:'bar',
+        data:{
+            labels,
+            datasets:[{
+                label:'Average Price (USD)',
+                data:price,
+                backgroundColor:'#28a745'
+            }]
+        }
+    }));
+
+    charts.push(new Chart(c3,{
+        type:'pie',
+        data:{
+            labels,
+            datasets:[{
+                label:'Sales Share',
+                data:sales
+            }]
+        }
+    }));
+
+    charts.push(new Chart(c4,{
+        type:'line',
+        data:{
+            labels,
+            datasets:[{
+                label:'Average Mileage (KM)',
+                data:mileage,
+                borderColor:'orange',
+                tension:0.3
+            }]
+        }
+    }));
+
+    generateInsights(labels, price, sales, mileage);
+}
+
+function generateInsights(labels, price, sales, mileage){
+    if(!labels.length){
+        ['insight1','insight2','insight3','insight4'].forEach(id=>{
+            document.getElementById(id).textContent = "No data available for selected filters.";
+        });
+        return;
+    }
+
+    const maxSalesIdx = sales.indexOf(Math.max(...sales));
+    const minSalesIdx = sales.indexOf(Math.min(...sales));
+    const salesTrend = sales[sales.length-1] > sales[0] ? "increasing" : "decreasing";
+    document.getElementById('insight1').textContent =
+        `Sales were highest in ${labels[maxSalesIdx]} and lowest in ${labels[minSalesIdx]}. Overall trend is ${salesTrend} over the selected period.`;
+
+    const maxPrice = Math.max(...price);
+    const minPrice = Math.min(...price);
+    const maxPriceIdx = price.indexOf(maxPrice);
+    const minPriceIdx = price.indexOf(minPrice);
+    document.getElementById('insight2').textContent =
+        `Highest average price was in ${labels[maxPriceIdx]} ($${Math.round(maxPrice).toLocaleString()}). Lowest was in ${labels[minPriceIdx]} ($${Math.round(minPrice).toLocaleString()}). Total range: $${Math.round(maxPrice - minPrice).toLocaleString()}.`;
+
+    const totalSales = sales.reduce((a,b)=>a+b,0);
+    const topIdx = sales.indexOf(Math.max(...sales));
+    const topPct = totalSales > 0 ? ((sales[topIdx]/totalSales)*100).toFixed(1) : 0;
+    document.getElementById('insight3').textContent =
+        `Year ${labels[topIdx]} has the largest share at ${topPct}% of total sales. Data spans ${labels.length} year(s) in current filter.`;
+
+    const maxMileageIdx = mileage.indexOf(Math.max(...mileage));
+    const mileageTrend = mileage[mileage.length-1] > mileage[0] ? "increasing" : "decreasing";
+    document.getElementById('insight4').textContent =
+        `Average mileage trend is ${mileageTrend}. Peak mileage of ${Math.round(Math.max(...mileage)).toLocaleString()} KM was in ${labels[maxMileageIdx]}, suggesting older vehicles have higher usage.`;
+}
+
+async function applyFilter(){
+    const y = year.value === "all" ? "" : year.value;
+    const r = region.value === "all" ? "" : region.value;
+    const m = model.value === "all" ? "" : model.value;
+    const url = `/dashboard-data/?year=${y}&region=${r}&model=${m}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    drawCharts(data.labels, data.price, data.sales, data.mileage);
+}
+
+function logout(){
+    window.location.href="/";
+}
+
+loadFilters();
+</script>
+
+</body>
+</html>

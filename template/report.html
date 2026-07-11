@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>System Report | Data Analysis & Prediction System</title>
+
+<style>/* GOOGLE FONT LOOK (fallback safe) */
+*{
+    box-sizing:border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* PAGE */
+body{
+    margin:0;
+    padding:0;
+    background:linear-gradient(135deg,#f4f6fb,#eef1f7);
+    line-height:1.8;
+    color:#333;
+}
+nav{
+    background:#0616a1;
+    padding:14px;
+    display:flex;
+    justify-content:flex-end;   /* RIGHT SIDE */
+    align-items:center;
+}
+nav a{
+    color:white;
+    margin-left:20px;   /* left margin instead of right */
+    text-decoration:none;
+    font-weight:bold;
+}
+/* PAGE TITLE */
+h1{
+    text-align:center;
+    margin:40px 0 20px;
+    font-size:34px;
+    color:#0616a1;
+}
+
+/* SECTIONS */
+.section{
+    background:white;
+    padding:35px;
+    margin:30px auto;
+    max-width:1000px;
+    border-radius:14px;
+    box-shadow:0 15px 35px rgba(0,0,0,0.12);
+    animation:fadeUp 0.6s ease-in-out;
+}
+
+/* SECTION HEADINGS */
+.section h2{
+    font-size:26px;
+    border-left:6px solid #0616a1;
+    padding-left:12px;
+    margin-bottom:15px;
+}
+
+.section h3{
+    margin-top:25px;
+    font-size:20px;
+    color:#0a28d9;
+}
+
+/* TEXT */
+p{
+    font-size:16px;
+    color:#444;
+    text-align:justify;
+}
+
+/* LISTS */
+ul,ol{
+    margin-left:25px;
+}
+li{
+    margin-bottom:8px;
+    font-size:15px;
+}
+
+/* HIGHLIGHT BOX EFFECT */
+.section:hover{
+    transform:translateY(-4px);
+    transition:0.3s;
+}
+
+/* FOOTER FEEL (OPTIONAL) */
+footer{
+    text-align:center;
+    padding:20px;
+    color:#666;
+    font-size:14px;
+}
+
+/* ANIMATION */
+@keyframes fadeUp{
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+    body{
+        padding:10px;
+    }
+    .section{
+        padding:25px;
+    }
+    h1{
+        font-size:26px;
+    }
+}
+/* FOOTER */
+footer{
+   background:#0616a1;
+    color:white;
+    text-align:center;
+    padding:10px;
+    margin-top:20px;
+}
+</style>
+</head>
+
+<body>
+<nav>
+    <a href="/dashboard/">Dashboard</a>
+    <a href="/pridiction/">Prediction</a>
+    <a href="/report/">Report</a>
+    <a href="/" onclick="logout()">Logout</a>
+</nav>
+
+<h1>📘 Web-Based Data Analysis and Prediction System</h1>
+
+<div class="section">
+<h2>1. Introduction</h2>
+<p>
+The Web-Based Data Analysis and Prediction System is developed to provide users with an interactive
+dashboard for data visualization and a machine learning based prediction module. The system allows
+users to analyze historical vehicle sales data and predict car prices based on different input features.
+</p>
+</div>
+
+<div class="section">
+<h2>2. Dashboard Module Report</h2>
+
+<h3>2.1 Purpose</h3>
+<p>
+The dashboard module is designed to visually represent large datasets in an understandable manner.
+It helps users identify trends, comparisons, and patterns in vehicle sales and pricing data.
+</p>
+
+<h3>2.2 Data Source</h3>
+<p>
+The dashboard uses data loaded from a CSV file (<b>data_sales.csv</b>) which contains historical records
+such as model year, region, fuel type, mileage, sales volume, and price.
+</p>
+
+<h3>2.3 Dashboard Features</h3>
+<ul>
+<li>Dynamic charts generated using Chart.js</li>
+<li>Multiple visualization types (Line, Bar, Pie, Doughnut, Radar)</li>
+<li>Real-time filtering based on:
+    <ul>
+        <li>Year</li>
+        <li>Region</li>
+        <li>Model</li>
+    </ul>
+</li>
+<li>Automatic chart updates without page reload</li>
+</ul>
+
+<h3>2.4 Visualization Purpose</h3>
+<ul>
+<li><b>Line Charts:</b> Used to analyze price and mileage trends over time</li>
+<li><b>Bar Charts:</b> Used to compare sales volume between models and regions</li>
+<li><b>Pie/Doughnut Charts:</b> Used to show proportional distribution of sales</li>
+<li><b>Radar Charts:</b> Used to compare mileage patterns</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>3. Prediction Module Report</h2>
+
+<h3>3.1 Purpose</h3>
+<p>
+The prediction module allows users to estimate the price of a vehicle based on selected attributes.
+This feature supports data-driven decision making and demonstrates the application of machine learning
+in real-world scenarios.
+</p>
+
+<h3>3.2 Input Parameters</h3>
+<ul>
+<li>Model Year</li>
+<li>Fuel Type</li>
+<li>Color</li>
+<li>Transmission Type</li>
+<li>Mileage (KM)</li>
+<li>Engin size </li>
+<li>Car model </li>
+</ul>
+
+<h3>3.3 Machine Learning Model</h3>
+<p>
+A regression-based machine learning model is used for price prediction. The model is trained offline
+using historical data and saved as a serialized file. During system operation, the model is only used
+for prediction and is not retrained.
+</p>
+
+<h3>3.4 Prediction Workflow</h3>
+<ol>
+<li>User enters vehicle details in the prediction form</li>
+<li>Frontend sends data to the backend using JSON</li>
+<li>Backend preprocesses input values</li>
+<li>Trained model generates predicted price</li>
+<li>Predicted result is displayed on the screen</li>
+</ol>
+
+<h3>3.5 Output</h3>
+<p>
+The predicted price is displayed in a result card along with a visual chart representation to enhance
+user understanding.
+</p>
+</div>
+
+<div class="section">
+<h2>4. Technologies Used</h2>
+<ul>
+<li>Frontend: HTML, CSS, JavaScript</li>
+<li>Visualization: Chart.js</li>
+<li>Backend: Django (Python)</li>
+<li>Machine Learning: Scikit-learn</li>
+<li>Database: SQLite</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>5. Conclusion</h2>
+<p>
+The Web-Based Data Analysis and Prediction System successfully integrates data visualization and machine
+learning into a single platform. The dashboard provides clear insights through dynamic charts, while
+the prediction module delivers accurate price estimations based on user input. This system is suitable
+for academic and analytical purposes and demonstrates practical implementation of data science concepts.
+</p>
+</div>
+<!-- FOOTER -->
+<footer>
+© 2026 Data Analyst System
+</footer>
+</body>
+</html>
